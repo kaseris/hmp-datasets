@@ -1,0 +1,1 @@
+from ._h36m import skeleton_h36m
