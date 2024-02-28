@@ -66,9 +66,9 @@ def main():
         out_actions = []
 
         print('Converting dataset...')
-        subjects = sorted(glob(output_directory + '/h3.6m/dataset/*'))
+        subjects = ['S1', 'S5', 'S6', 'S7', 'S8', 'S9', 'S11']
         for subject in subjects:
-            actions = sorted(glob(subject + '/*'))
+            actions = sorted(glob(osp.join(output_directory, subject) + '/*'))
             result_ = {}
             for action_filename in actions:
                 data = read_file(action_filename)
@@ -90,9 +90,9 @@ def main():
 
         print('Saving...')
         np.savez_compressed(output_file_path,
-                trajectories=out_pos,
-                rotations=out_rot,
-                subjects=out_subjects,
-                actions=out_actions)
+                trajectories=np.array(out_pos, dtype=object),
+                rotations=np.array(out_rot, dtype=object),
+                subjects=np.array(out_subjects, dtype=object),
+                actions=np.array(out_actions, dtype=object))
 
         print('Done.')
