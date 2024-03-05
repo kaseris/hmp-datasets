@@ -9,6 +9,7 @@
 
 import os
 import os.path as osp
+import pickle
 import errno
 import zipfile
 import numpy as np
@@ -20,7 +21,10 @@ from glob import glob
 from hmpdata.misc.quaternion import expmap_to_quaternion, qfix
 from shutil import rmtree
 
-def main():
+from hmpdata.human36m._dlow.utils import define_actions, read_all_data
+
+
+def quaternet():
     output_directory = 'datasets'
     output_filename = 'dataset_h36m'
     h36m_dataset_url = 'https://d2w4o3a2qv40y3.cloudfront.net/h36m.zip'
@@ -96,3 +100,64 @@ def main():
                 actions=np.array(out_actions, dtype=object))
 
         print('Done.')
+
+def dlow():
+    output_directory = 'datasets'
+    output_filename = 'dataset_h36m'
+    h36m_dataset_url = 'https://d2w4o3a2qv40y3.cloudfront.net/h36m.zip'
+
+    try:
+        # Create output directory if it does not exist
+        os.makedirs(output_directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+    output_file_path = output_directory + '/' + output_filename
+    if os.path.exists(output_file_path + '.npz'):
+        print('The dataset already exists at', output_file_path + '.npz')
+    else:   
+        # Download Human3.6M dataset in exponential map format
+        print('Downloading Human3.6M dataset (it may take a while)...')
+        h36m_path = output_directory + '/h3.6m.zip'
+        print(f'URL: {h36m_dataset_url}')
+        urlretrieve(h36m_dataset_url, h36m_path)
+        # We do not download a zip file
+        print('Extracting Human3.6M dataset...')
+        with zipfile.ZipFile(h36m_path, 'r') as archive:
+            archive.extractall(output_directory)
+        os.remove(h36m_path) # Clean up
+
+    actions = define_actions('all')
+    prefix_len = 50
+    pred_len = 25
+    data_dir = 'datasets'
+    omit_one_hot = True
+
+    train_set, test_set, \
+    data_mean, data_std, \
+    dim_to_ignore, dim_to_use = read_all_data(  actions, 
+                                                prefix_len, 
+                                                pred_len, 
+                                                data_dir, 
+                                                not omit_one_hot)
+
+    data = {}
+    data['train'] = train_set
+    data['test'] = test_set
+    data['mean'] = data_mean
+    data['std'] = data_std
+    data['dim_to_ignore'] = dim_to_ignore
+    data['dim_to_use'] = dim_to_use
+
+    pickle.dump(data, open('datasets/h36m_euler.pkl', 'wb'))
+    print('Done.')
+
+def main():
+    mode = sys.argv[1]
+    if mode.lower() == 'quaternet':
+        quaternet()
+    elif mode.lower() == 'dlow':
+        dlow()
+    else:
+        raise ValueError(f'Invalid mode: {mode}')
