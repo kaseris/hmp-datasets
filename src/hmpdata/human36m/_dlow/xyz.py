@@ -175,7 +175,7 @@ class DatasetH36M(Dataset):
             self.traj_dim += 3
 
     def prepare_data(self):
-        self.data_file = os.path.join('data', 'data_3d_h36m.npz')
+        self.data_file = os.path.join('/Users/michaliskaseris/dev/hmp-datasets/datasets/', 'data_3d_h36m.npz')
         self.subjects_split = {'train': [1, 5, 6, 7, 8],
                                'test': [9, 11]}
         self.subjects = ['S%d' % x for x in self.subjects_split[self.mode]]
