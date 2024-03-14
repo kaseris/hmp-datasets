@@ -168,14 +168,15 @@ class Skeleton:
                 
 class DatasetH36M(Dataset):
 
-    def __init__(self, mode, t_his=25, t_pred=100, actions='all', use_vel=False):
+    def __init__(self, data_dir,  mode, t_his=25, t_pred=100, actions='all', use_vel=False):
         self.use_vel = use_vel
+        self.data_dir = data_dir
         super().__init__(mode, t_his, t_pred, actions)
         if use_vel:
             self.traj_dim += 3
 
     def prepare_data(self):
-        self.data_file = os.path.join('/Users/michaliskaseris/dev/hmp-datasets/datasets/', 'data_3d_h36m.npz')
+        self.data_file = os.path.join(self.data_dir, 'data_3d_h36m.npz')
         self.subjects_split = {'train': [1, 5, 6, 7, 8],
                                'test': [9, 11]}
         self.subjects = ['S%d' % x for x in self.subjects_split[self.mode]]
