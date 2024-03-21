@@ -7,6 +7,7 @@ from hmpdata.human36m._dlow.euler import get_batch as DLowEulerDataLoader
 from hmpdata.human36m._dlow.utils import define_actions
 from hmpdata.human36m._wei import Human36M as WeiHuman36M
 from hmpdata.human36m._dlow.xyz import DatasetH36M as Human36MXYZ
+from hmpdata.visualization import visualization as viz
 
 
 Human36MDataset = MocapDataset
