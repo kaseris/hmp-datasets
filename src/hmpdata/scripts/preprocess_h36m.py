@@ -105,6 +105,7 @@ def dlow():
     output_directory = 'datasets'
     output_filename = 'dataset_h36m'
     h36m_dataset_url = 'https://d2w4o3a2qv40y3.cloudfront.net/h36m.zip'
+    h36m_dataset_xyz = 'https://d2w4o3a2qv40y3.cloudfront.net/data_3d_h36m.npz'
 
     try:
         # Create output directory if it does not exist
@@ -122,6 +123,8 @@ def dlow():
         h36m_path = output_directory + '/h3.6m.zip'
         print(f'URL: {h36m_dataset_url}')
         urlretrieve(h36m_dataset_url, h36m_path)
+        print(f'Downloading Human3.6M dataset in XYZ format...')
+        urlretrieve(h36m_dataset_xyz, output_directory + '/data_3d_h36m.npz')
         # We do not download a zip file
         print('Extracting Human3.6M dataset...')
         with zipfile.ZipFile(h36m_path, 'r') as archive:
