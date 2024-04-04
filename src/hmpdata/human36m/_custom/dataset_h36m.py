@@ -289,12 +289,15 @@ def build_dataset(path_to_dataset: Union[str, PathLike],
                   mode: str = 'train',
                   augmentations = ['downsample', 'mirror'],
                   prefix_len: int = 25):
+    subjects = []
     if mode == 'train':
         subjects = ['S1', 'S7', 'S8', 'S9', 'S11']
     elif mode == 'val':
         subjects = ['S6']
     elif mode == 'test':
         subjects = ['S5']
+    else:
+        raise ValueError(f"Invalid mode: {mode}. Expected 'train', 'val', or 'test'.")
 
     dataset = Human36MCustomDataset(path=path_to_dataset, skeleton=skeleton, subjects=subjects, use_gpu=use_gpu, fps=fps)
     for aug in augmentations:
