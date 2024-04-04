@@ -77,9 +77,6 @@ class Human36MCollateFunction:
         self._target_len = target_len
 
     def __call__(self, batch: List[Human36MCustomDatasetSample]) -> dict:
-        print('Collate function called.')
-        print(len(batch))
-        print(f'Type of first element of the batch: {type(batch[0])}')
         start_indices = [torch.randint(0, len(sample.positions_world) - self._prefix_len, (1,)).item() for sample in batch]
         start_indices = torch.tensor(start_indices)
         # Slice the data
