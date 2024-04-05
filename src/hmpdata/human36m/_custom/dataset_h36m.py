@@ -285,7 +285,8 @@ def build_dataset(path_to_dataset: Union[str, PathLike],
                   use_gpu: bool = False,
                   mode: str = 'train',
                   augmentations = ['downsample', 'mirror'],
-                  prefix_len: int = 25):
+                  prefix_len: int = 25,
+                  batch_size: int = 32):
     subjects = []
     if mode == 'train':
         subjects = ['S1', 'S7', 'S8', 'S9', 'S11']
@@ -305,7 +306,7 @@ def build_dataset(path_to_dataset: Union[str, PathLike],
     dataset.compute_positions()
     dataset.flatten()
     # Create the data loader
-    data_loader = DataLoader(dataset, batch_size=32, collate_fn=Human36MCollateFunction(prefix_len=prefix_len))
+    data_loader = DataLoader(dataset, batch_size=batch_size, collate_fn=Human36MCollateFunction(prefix_len=prefix_len))
     return dataset, data_loader
 
 
