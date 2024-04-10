@@ -95,6 +95,10 @@ class Human36MCollateFunction:
         rotations = torch.cat(rotations, dim=0)
         positions_world = torch.cat(positions_world, dim=0)
         positions_local = torch.cat(positions_local, dim=0)
+        trajectories_labels = torch.cat(trajectories_labels, dim=0)
+        rotations_labels = torch.cat(rotations_labels, dim=0)
+        positions_world_labels = torch.cat(positions_world_labels, dim=0)
+        positions_local_labels = torch.cat(positions_local_labels, dim=0)
         return Batch(
             subjects=[sample.subject for sample in batch],
             actions=[sample.action for sample in batch],
