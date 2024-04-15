@@ -1,4 +1,4 @@
-__version__ = '1.3.4'
+__version__ = '1.4.0'
 
 from hmpdata.human36m._h36m import skeleton_h36m as Human36MSkeleton
 from hmpdata.human36m.loader import prepare_next_batch_impl as prepare_next_batch
@@ -11,5 +11,7 @@ from hmpdata.visualization import visualization as viz
 
 from hmpdata.human36m._custom import Human36MCustomDataset, build_dataset, Human36MCustomDatasetSample
 from hmpdata.human36m._custom import Batch as Human36MCustomBatch
+
+from hmpdata.humaneva.dataset_humaneva import DatasetHumanEva as HumanEva
 
 Human36MDataset = MocapDataset
