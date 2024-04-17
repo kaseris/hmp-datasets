@@ -12,6 +12,13 @@ from hmpdata.visualization import visualization as viz
 from hmpdata.human36m._custom import Human36MCustomDataset, build_dataset, Human36MCustomDatasetSample
 from hmpdata.human36m._custom import Batch as Human36MCustomBatch
 
+# siMLPe
+from hmpdata.human36m._simlpe.dataset_h36m import H36MDataset as Human36MsiMLPe
+from hmpdata.human36m._simlpe.config import Human36MDatasetConfig
+from hmpdata.human36m._simlpe.h36m_eval import H36MEval
+
 from hmpdata.humaneva.dataset_humaneva import DatasetHumanEva as HumanEva
+
+
 
 Human36MDataset = MocapDataset
