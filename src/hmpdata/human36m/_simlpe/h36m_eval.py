@@ -3,25 +3,26 @@ import glob
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+from hmpdata.human36m._simlpe.config import Human36MDatasetConfig
 from hmpdata.human36m._simlpe.misc import expmap2rotmat_torch, find_indices_256, find_indices_srnn, rotmat2xyz_torch
 
 import torch
 import torch.utils.data as data
 
 class H36MEval(data.Dataset):
-    def __init__(self, config, split_name, paired=True):
+    def __init__(self, data_dir, config: Human36MDatasetConfig, split_name, paired=True):
         super(H36MEval, self).__init__()
         self._split_name = split_name
-        self._h36m_anno_dir = config.h36m_anno_dir
+        self._h36m_anno_dir = data_dir
         self._actions = ["walking", "eating", "smoking", "discussion", "directions",
                         "greeting", "phoning", "posing", "purchases", "sitting",
                         "sittingdown", "takingphoto", "waiting", "walkingdog",
                         "walkingtogether"]
 
-        self.h36m_motion_input_length =  config.motion.h36m_input_length
-        self.h36m_motion_target_length =  config.motion.h36m_target_length
+        self.h36m_motion_input_length =  config.h36m_input_length
+        self.h36m_motion_target_length =  config.h36m_target_length_eval
 
-        self.motion_dim = config.motion.dim
+        self.motion_dim = config.dim
         self.shift_step = config.shift_step
         self._h36m_files = self._get_h36m_files()
         self._file_length = len(self.data_idx)
@@ -34,11 +35,7 @@ class H36MEval(data.Dataset):
     def _get_h36m_files(self):
 
         # create list
-        seq_names = []
-
-        seq_names += open(
-            os.path.join(self._h36m_anno_dir.replace('h36m', ''), "h36m_test.txt"), 'r'
-            ).readlines()
+        seq_names = ['S11']
 
         self.h36m_seqs = []
         self.data_idx = []
