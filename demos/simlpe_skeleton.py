@@ -20,6 +20,7 @@ def render(
     joint_colors: List[str] = ["red", "blue"],
     connections: Optional[List[Tuple[int, int]]] = None,
     mode: str = "interactive",
+    fname: Optional[str] = 'animation.gif',
 ):
     """
     Render the 3D animation of the given data.
@@ -129,6 +130,9 @@ def render(
         plt.show()
     else:
         writer = animation.PillowWriter(fps=25, bitrate=100)
-        ani.save("animation.gif", writer=writer)
+        # Check if there is .gif extension
+        if not fname.endswith(".gif"):
+            fname += ".gif"
+        ani.save(f"{fname}", writer=writer)
 
 render(xyz_info, joint_colors=["red", "blue"], connections=None)
