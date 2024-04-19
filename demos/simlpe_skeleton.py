@@ -11,7 +11,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 dataset = hmpdata.Human36MsiMLPe(
     data_dir="datasets", split_name="train", config=hmpdata.Human36MDatasetConfig()
 )
-observation, target = dataset[34]
+observation, target = dataset[8786]
 xyz_info = observation.numpy().reshape(-1, 22, 3)
 
 def render(
@@ -20,6 +20,7 @@ def render(
     connections: Optional[List[Tuple[int, int]]] = None,
     mode: str = "interactive",
     fname: Optional[str] = 'animation.gif',
+    fps: int = 50
 ):
     if connections is None:
         connections = [
@@ -32,12 +33,12 @@ def render(
         radius = torch.max(torch.tensor(d)).item() * 2
         ax.set_xlim3d([-radius / 2, radius / 2])
         ax.set_ylim3d([-radius / 2, radius / 2])
-        ax.set_zlim3d([0, radius])
+        ax.set_zlim3d([-radius, radius])
         ax.set_aspect("equal")
         ax.set_xticklabels([])
         ax.set_yticklabels([])
         ax.set_zticklabels([])
-        ax.view_init(elev=90.0, azim=-90)
+        ax.view_init(elev=90.0, azim=-90, roll=45.)
         ax.dist = 0
 
         right_side_joints = {0, 1, 2, 3, 17, 18, 19, 20, 21}
@@ -58,6 +59,7 @@ def render(
 
     fig = plt.figure(figsize=(14, 7) if data2 is not None else (7, 7))
     ax1 = fig.add_subplot(121, projection='3d') if data2 is not None else fig.add_subplot(111, projection='3d')
+    ax1.title.set_text("Skeleton 1")
 
     colors1 = ["red", "blue"]  # Colors for ax1
     animation_elements1 = setup_ax(ax1, data, colors1)
@@ -66,7 +68,8 @@ def render(
         ax2 = fig.add_subplot(122, projection='3d')
         colors2 = ["green", "purple"]  # Colors for ax2
         animation_elements2 = setup_ax(ax2, data2, colors2)
-
+    ax2.title.set_text("Skeleton 2")
+    
     def update(frame):
         artists = []
         for points, lines in [animation_elements1, animation_elements2] if data2 is not None else [animation_elements1]:
@@ -87,7 +90,7 @@ def render(
 
         return artists
 
-    ani = FuncAnimation(fig, update, frames=data.shape[0], blit=True, interval=25, repeat=True)
+    ani = FuncAnimation(fig, update, frames=data.shape[0], blit=True, interval=1000 / fps, repeat=True)
 
     if mode == "interactive":
         plt.show()
