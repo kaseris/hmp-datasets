@@ -61,6 +61,6 @@ You can use either of the two options, and the package will automatically prepar
 
 - [x] Human3.6M implementation and visualization
 
-- [] HumanEva
+- [ ] HumanEva
 
-- [] AMASS (contains HumanEva)
+- [ ] AMASS (contains HumanEva)
