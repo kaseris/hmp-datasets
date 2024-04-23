@@ -61,7 +61,7 @@ def render(
         ax2 = fig.add_subplot(122, projection='3d')
         colors2 = ["green", "purple"]  # Colors for ax2
         animation_elements2 = setup_ax(ax2, data2, colors2)
-    ax2.title.set_text("Skeleton 2")
+        ax2.title.set_text("Skeleton 2")
     
     def update(frame):
         artists = []
