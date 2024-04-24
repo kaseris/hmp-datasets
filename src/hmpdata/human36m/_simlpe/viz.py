@@ -91,3 +91,4 @@ def render(
         if not fname.endswith(".gif"):
             fname += ".gif"
         ani.save(fname, writer=PillowWriter(fps=25, bitrate=1800))
+    plt.close()
