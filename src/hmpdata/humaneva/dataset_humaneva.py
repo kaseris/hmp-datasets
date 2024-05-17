@@ -5,11 +5,12 @@ from hmpdata.human36m._dlow.xyz import Dataset, Skeleton
 
 class DatasetHumanEva(Dataset):
 
-    def __init__(self, mode, t_his=15, t_pred=60, actions='all', **kwargs):
+    def __init__(self, data_dir, mode, t_his=15, t_pred=60, actions='all', **kwargs):
+        self.data_dir = data_dir
         super().__init__(mode, t_his, t_pred, actions)
-
+        
     def prepare_data(self):
-        self.data_file = os.path.join('datasets', 'data_3d_humaneva15.npz')
+        self.data_file = os.path.join(f'{self.data_dir}', 'data_3d_humaneva15.npz')
         self.subjects_split = {'train': ['Train/S1', 'Train/S2', 'Train/S3'],
                                'test': ['Validate/S1', 'Validate/S2', 'Validate/S3']}
         self.subjects = [x for x in self.subjects_split[self.mode]]
@@ -45,7 +46,7 @@ class DatasetHumanEva(Dataset):
 if __name__ == '__main__':
     np.random.seed(0)
     actions = 'all'
-    dataset = DatasetHumanEva('test', actions=actions)
+    dataset = DatasetHumanEva(data_dir='datasets', mode='test', actions=actions)
     generator = dataset.sampling_generator()
     dataset.normalize_data()
     # generator = dataset.iter_generator()
