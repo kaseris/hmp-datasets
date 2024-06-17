@@ -64,3 +64,5 @@ You can use either of the two options, and the package will automatically prepar
 - [ ] HumanEva
 
 - [ ] AMASS (contains HumanEva)
+
+- [ ] Add a requirements file.
