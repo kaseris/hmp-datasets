@@ -1,3 +1,8 @@
+import os
+import os.path as osp
+import pickle
+import argparse
+
 import bpy
 import numpy as np
 
@@ -15,17 +20,43 @@ def process_file(filename: str) -> np.ndarray:
     bpy.ops.import_scene.fbx(filepath=filename)
     frame_start = bpy.context.scene.frame_start
     frame_end = bpy.context.scene.frame_end
-    print(f'frame_start: {frame_start}, frame_end: {frame_end}')
+    if args.verbose:
+        print(f'frame_start: {frame_start}, frame_end: {frame_end}')
     sequence = []
     for frame_number in range(frame_start, frame_end + 1):
-        print(f'Processing frame {frame_number}')
+        if args.verbose:
+            print(f'Processing frame {frame_number}')
         bpy.context.scene.frame_set(frame_number)
         armature_name = "Root"
         armature = bpy.data.objects.get(armature_name)
         locations = []
         if armature is None:
-            print(f"Armature '{armature_name}' not found.")
+            raise ValueError(f"Armature '{armature_name}' not found.")
         else:
             locations = compute_bone_world_space_coordinates(armature)
         sequence.append(locations)
     return np.array(sequence)
+
+def main():
+    subdirs = os.listdir(args.data_dir)
+    if 'recordings' not in subdirs:
+        raise ValueError('`recordings` subdirectory not found.')
+    raw_data_path = osp.join(args.data_dir, 'recordings')
+    fnames = os.listdir(raw_data_path)
+    sequences_dict = dict()
+    for fname in fnames:
+        if args.verbose:
+            print(f'Processing file: {fname}')
+        full_path = osp.join(raw_data_path, fname)
+        sequence = process_file(full_path)
+        sequences_dict[f'{fname}'] = sequence
+    with open('rokoko_data.pkl', 'wb') as f:
+        pickle.dump(sequences_dict, f)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', help='Raw data directory', type=str, required=True)
+    parser.add_argument('--verbose', help='Enable print statmetns', type=bool, required=False, default=False)
+
+    args = parser.parse_args()
+    main()
