@@ -38,6 +38,11 @@ def process_file(filename: str) -> np.ndarray:
     return np.array(sequence)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', help='Raw data directory', type=str, required=True)
+    parser.add_argument('--verbose', help='Enable print statmetns', type=bool, required=False, default=False)
+
+    args = parser.parse_args()
     subdirs = os.listdir(args.data_dir)
     if 'recordings' not in subdirs:
         raise ValueError('`recordings` subdirectory not found.')
@@ -52,11 +57,3 @@ def main():
         sequences_dict[f'{fname}'] = sequence
     with open('rokoko_data.pkl', 'wb') as f:
         pickle.dump(sequences_dict, f)
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', help='Raw data directory', type=str, required=True)
-    parser.add_argument('--verbose', help='Enable print statmetns', type=bool, required=False, default=False)
-
-    args = parser.parse_args()
-    main()
