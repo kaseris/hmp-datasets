@@ -1,4 +1,4 @@
-__version__ = '1.7.3'
+__version__ = '1.7.4'
 
 from hmpdata.human36m._h36m import skeleton_h36m as Human36MSkeleton
 from hmpdata.human36m.loader import prepare_next_batch_impl as prepare_next_batch
@@ -20,6 +20,6 @@ from hmpdata.human36m._simlpe.viz import render as render_siMLPe
 
 from hmpdata.humaneva.dataset_humaneva import DatasetHumanEva as HumanEva
 
-
+from hmpdata.rokoko.dataset_rokoko import RokokoDataset as RokokoDataset
 
 Human36MDataset = MocapDataset
