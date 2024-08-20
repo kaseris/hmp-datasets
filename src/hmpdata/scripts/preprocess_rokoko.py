@@ -40,7 +40,7 @@ def process_file(filename: str) -> np.ndarray:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', help='Raw data directory', type=str, required=True)
-    parser.add_argument('--verbose', help='Enable print statmetns', type=bool, required=False, default=False)
+    parser.add_argument('--verbose', help='Enable print statements', type=bool, required=False, default=False)
     global args
     args = parser.parse_args()
     subdirs = os.listdir(args.data_dir)
