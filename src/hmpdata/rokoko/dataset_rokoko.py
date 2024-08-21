@@ -35,5 +35,5 @@ class RokokoDataset(Dataset):
     def __len__(self):
         return len(self.motion_data)
     
-    def remove_subscripts_and_extension(x: str)->str:
+    def remove_subscripts_and_extension(self, x: str)->str:
         return re.sub(r"_\d+.*", "", x)
