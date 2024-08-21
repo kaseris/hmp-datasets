@@ -26,7 +26,7 @@ class RokokoDataset(Dataset):
     def __getitem__(self, idx):
         name = self.names[idx]
         label = self.name2class[self.remove_subscripts_and_extension(name)]
-        label = torch.LongTensor(label)
+        label = torch.tensor(label)
         motion_data = torch.from_numpy(self.motion_data[idx])
         if self.return_name:
             return motion_data, label, name
