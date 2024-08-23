@@ -21,6 +21,8 @@ class RokokoDataset(Dataset):
         for name in names_filtered:
             self.unique_names.add(name)
         self.name2class = {k: v for v, k in enumerate(self.unique_names)}
+        # Invert class lookup dict for demo purposes
+        self.class2name = {v: k for k, v in self.name2class.items()}
         self.motion_data = list(self.data.values())
 
     def __getitem__(self, idx):
