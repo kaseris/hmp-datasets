@@ -140,6 +140,7 @@ def process_file_with_motion_paths(fbx_path: str):
             print('No motion paths were generated.')
     else:
         print('Could not determine animation range.')
+    return motion_paths
 
 def main():
     parser = argparse.ArgumentParser()
@@ -157,7 +158,7 @@ def main():
         if args.verbose:
             print(f'Processing file: {fname}')
         full_path = osp.join(raw_data_path, fname)
-        sequence = process_file(full_path)
+        sequence = process_file_with_motion_paths(full_path)
         sequences_dict[f'{fname}'] = sequence
     with open('rokoko_data.pkl', 'wb') as f:
         pickle.dump(sequences_dict, f)
