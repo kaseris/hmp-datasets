@@ -39,6 +39,44 @@ def get_animation_range(armature_name):
     return int(start_frame), int(end_frame)
 
 
+def generate_motion_paths(armature_name, start_frame, end_frame):
+    if armature_name not in bpy.data.objects:
+        print(f"Armature '{armature_name}' not found in the scene.")
+        return None
+
+    armature = bpy.data.objects[armature_name]
+    
+    if armature.type != 'ARMATURE':
+        print(f"Object '{armature_name}' is not an armature.")
+        return None
+
+    motion_paths = {}
+
+    # Store current frame
+    current_frame = bpy.context.scene.frame_current
+
+    # Iterate through frames and collect bone positions
+    for frame in range(start_frame, end_frame + 1):
+        bpy.context.scene.frame_set(frame)
+        
+        for bone in armature.pose.bones:
+            if bone.name not in motion_paths:
+                motion_paths[bone.name] = []
+            
+            # Get bone's head position in world space
+            world_pos = armature.matrix_world @ bone.matrix @ bone.head
+            motion_paths[bone.name].append(world_pos)
+
+    # Convert lists to numpy arrays
+    for bone_name in motion_paths:
+        motion_paths[bone_name] = np.array(motion_paths[bone_name])
+
+    # Restore original frame
+    bpy.context.scene.frame_set(current_frame)
+
+    return motion_paths
+
+
 def process_file(filename: str) -> np.ndarray:
     bpy.ops.import_scene.fbx(filepath=filename)
     frame_start = bpy.context.scene.frame_start
