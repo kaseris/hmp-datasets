@@ -6,6 +6,8 @@ import argparse
 import bpy
 import numpy as np
 
+from collections import OrderedDict
+
 def compute_bone_world_space_coordinates(armature):
     locations = []
     for bone in armature.pose.bones:
@@ -67,7 +69,7 @@ def generate_motion_paths(armature_name, start_frame, end_frame):
         print(f"Object '{armature_name}' is not an armature.")
         return None
 
-    motion_paths = {}
+    motion_paths = OrderedDict()
     bone_hierarchy = get_bone_hierarchy(armature)
     flat_hierarchy = flatten_hierarchy(bone_hierarchy)
 
@@ -153,7 +155,7 @@ def main():
         raise ValueError('`recordings` subdirectory not found.')
     raw_data_path = osp.join(args.data_dir, 'recordings')
     fnames = os.listdir(raw_data_path)
-    sequences_dict = dict()
+    sequences_dict = OrderedDict()
     for fname in fnames:
         if args.verbose:
             print(f'Processing file: {fname}')
