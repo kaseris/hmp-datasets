@@ -98,6 +98,35 @@ def process_file(filename: str) -> np.ndarray:
         sequence.append(locations)
     return np.array(sequence)
 
+def process_file_with_motion_paths(fbx_path: str):
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.fbx(filepath=fbx_path)
+    start, end = get_animation_range('Root')
+    if start is not None and end is not None:
+        print(f"Animation range for 'Root': Start frame = {start}, End frame = {end}")
+        motion_paths, hierarchy = generate_motion_paths('Root', start, end)
+        if motion_paths:
+            print(f'Motion paths were read correctly.')
+            print("\nMotion Path Data:")
+            for bone_name, path in motion_paths.items():
+                print(f"\nBone: {bone_name}")
+                print(f"Shape of path array: {path.shape}")
+                print(f"First point: {path[0]}")
+                print(f"Last point: {path[-1]}")
+                
+                # Example of numpy operations
+                mean_position = np.mean(path, axis=0)
+                print(f"Mean position: {mean_position}")
+                
+                # Calculate total distance traveled
+                distances = np.linalg.norm(path[1:] - path[:-1], axis=1)
+                total_distance = np.sum(distances)
+                print(f"Total distance traveled: {total_distance}")
+        else:
+            print('No motion paths were generated.')
+    else:
+        print('Could not determine animation range.')
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', help='Raw data directory', type=str, required=True)
