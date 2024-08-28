@@ -94,7 +94,7 @@ class RokokoDataset(Dataset):
     def seq_lens(self):
         return self._seq_lens
     
-def my_collate_fn(batch):
+def rokoko_collate_fn(batch):
     motion_data = [b[0] for b in batch]
     labels = [b[1] for b in batch]
     lens = [md.shape[0] for md in motion_data]
