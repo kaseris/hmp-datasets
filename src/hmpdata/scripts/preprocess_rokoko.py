@@ -38,6 +38,23 @@ def get_animation_range(armature_name):
 
     return int(start_frame), int(end_frame)
 
+def get_bone_hierarchy(armature):
+    def recurse(bone, parent=None):
+        hierarchy = {
+            'name': bone.name,
+            'parent': parent,
+            'children': [recurse(child, bone.name) for child in bone.children]
+        }
+        return hierarchy
+    
+    return [recurse(bone) for bone in armature.data.bones if bone.parent is None]
+
+def flatten_hierarchy(hierarchy):
+    flat = []
+    for bone in hierarchy:
+        flat.append((bone['name'], bone['parent']))
+        flat.extend(flatten_hierarchy(bone['children']))
+    return flat
 
 def generate_motion_paths(armature_name, start_frame, end_frame):
     if armature_name not in bpy.data.objects:
@@ -51,11 +68,11 @@ def generate_motion_paths(armature_name, start_frame, end_frame):
         return None
 
     motion_paths = {}
+    bone_hierarchy = get_bone_hierarchy(armature)
+    flat_hierarchy = flatten_hierarchy(bone_hierarchy)
 
-    # Store current frame
     current_frame = bpy.context.scene.frame_current
 
-    # Iterate through frames and collect bone positions
     for frame in range(start_frame, end_frame + 1):
         bpy.context.scene.frame_set(frame)
         
@@ -63,18 +80,15 @@ def generate_motion_paths(armature_name, start_frame, end_frame):
             if bone.name not in motion_paths:
                 motion_paths[bone.name] = []
             
-            # Get bone's head position in world space
             world_pos = armature.matrix_world @ bone.matrix @ bone.head
             motion_paths[bone.name].append(world_pos)
 
-    # Convert lists to numpy arrays
     for bone_name in motion_paths:
         motion_paths[bone_name] = np.array(motion_paths[bone_name])
 
-    # Restore original frame
     bpy.context.scene.frame_set(current_frame)
 
-    return motion_paths
+    return motion_paths, flat_hierarchy
 
 
 def process_file(filename: str) -> np.ndarray:
