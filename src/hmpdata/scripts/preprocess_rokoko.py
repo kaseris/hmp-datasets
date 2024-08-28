@@ -16,6 +16,29 @@ def compute_bone_world_space_coordinates(armature):
         locations.append(np.array(bone_location))
     return np.array(locations)
 
+
+def get_animation_range(armature_name):
+    if armature_name not in bpy.data.objects:
+        print(f'Armature `{armature_name} not found in the scene.`')
+        return None, None
+    armature = bpy.data.objects[armature_name]
+
+    if armature.type != 'ARMATURE':
+        print(f'Object `{armature_name}` is not an armature')
+        return None, None
+    
+    start_frame = float('inf')
+    end_frame = float('-inf')
+
+    for fcurve in armature.animation_data.action.fcurves:
+        for keyframe in fcurve.keyframe_points:
+            frame = keyframe.co.x
+            start_frame = min(start_frame, frame)
+            end_frame = max(end_frame, frame)
+
+    return int(start_frame), int(end_frame)
+
+
 def process_file(filename: str) -> np.ndarray:
     bpy.ops.import_scene.fbx(filepath=filename)
     frame_start = bpy.context.scene.frame_start
