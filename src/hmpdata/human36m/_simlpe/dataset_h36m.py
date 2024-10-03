@@ -105,10 +105,14 @@ class H36MDataset(data.Dataset):
 
         h36m_motion_input = motion[:self.h36m_motion_input_length] / 1000 # meter
         h36m_motion_target = motion[self.h36m_motion_input_length:] / 1000 # meter
+        h36_motion_next_pose = motion[self.h36m_motion_input_length:self.h36m_motion_input_length+1] / 1000
+        h36m_motion_input = h36m_motion_input.float()
+        h36m_motion_target = h36m_motion_target.float()
+        h36_motion_next_pose = h36_motion_next_pose.float()
 
         h36m_motion_input = h36m_motion_input.float()
         h36m_motion_target = h36m_motion_target.float()
-        return h36m_motion_input, h36m_motion_target
+        return h36m_motion_input, h36m_motion_target, h36_motion_next_pose
 
 
 if __name__ == '__main__':
