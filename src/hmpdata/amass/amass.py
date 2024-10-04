@@ -179,4 +179,5 @@ class AMASSDataset(data.Dataset):
 
         amass_motion_input = amass_motion[: self.amass_motion_input_length].float()
         amass_motion_target = amass_motion[-self.amass_motion_target_length :].float()
-        return amass_motion_input, amass_motion_target
+        amass_next_pose = amass_motion_target[:1].float()
+        return amass_motion_input, amass_motion_target, amass_next_pose
