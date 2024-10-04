@@ -5,24 +5,33 @@ from tqdm import tqdm
 from scipy.spatial.transform import Rotation as R
 
 from hmpdata.amass.angle_to_joint import ang2joint
+from dataclasses import dataclass
 
 import torch
 import torch.utils.data as data
 
+@dataclass
+class AMASSConfig:
+    amass_input_length: int = 50
+    amass_target_length: int = 25
+    dim: int = 54
+    shift_step: int = 1
+
+
 
 class AMASSEval(data.Dataset):
-    def __init__(self, config, split_name, paired=True):
+    def __init__(self, data_dir: str, config: AMASSConfig, split_name, paired=True):
         super(AMASSEval, self).__init__()
         self._split_name = split_name
-        self._amass_anno_dir = config.amass_anno_dir
-        self._root_dir = config.root_dir
+        self._amass_anno_dir = data_dir
+        self._root_dir = data_dir
 
         self._amass_file_names = self._get_amass_names()
 
-        self.amass_motion_input_length = config.motion.amass_input_length
-        self.amass_motion_target_length = config.motion.amass_target_length
+        self.amass_motion_input_length = config.amass_input_length
+        self.amass_motion_target_length = config.amass_target_length
 
-        self.motion_dim = config.motion.dim
+        self.motion_dim = config.dim
         self.shift_step = config.shift_step
 
         self._load_skeleton()
