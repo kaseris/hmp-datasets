@@ -11,7 +11,7 @@ import torch
 import torch.utils.data as data
 
 @dataclass
-class AMASSConfig:
+class AMASSEvalConfig:
     amass_input_length: int = 50
     amass_target_length: int = 25
     dim: int = 54
@@ -20,7 +20,7 @@ class AMASSConfig:
 
 
 class AMASSEval(data.Dataset):
-    def __init__(self, data_dir: str, config: AMASSConfig, split_name, paired=True):
+    def __init__(self, data_dir: str, config: AMASSEvalConfig, split_name, paired=True):
         super(AMASSEval, self).__init__()
         self._split_name = split_name
         self._amass_anno_dir = data_dir
