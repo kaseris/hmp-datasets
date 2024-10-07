@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 class AMASSDataset(Dataset):
 
-    def __init__(self, opt, actions=None, split=0):
+    def __init__(self, input_n, output_n, skip_rate, actions=None, split=0):
         """
         :param path_to_data:
         :param actions:
@@ -22,8 +22,9 @@ class AMASSDataset(Dataset):
         """
         self.path_to_data = "./datasets/amass/"
         self.split = split
-        self.in_n = opt.input_n
-        self.out_n = opt.output_n
+        self.in_n = input_n
+        self.out_n = output_n
+        self.skip_rate = skip_rate
         # self.sample_rate = opt.sample_rate
         self.p3d = []
         self.keys = []
@@ -105,9 +106,9 @@ class AMASSDataset(Dataset):
                     # self.p3d[(ds, sub, act)] = p3d.cpu().data.numpy()
                     self.p3d.append(p3d.cpu().data.numpy())
                     if split == 2:
-                        valid_frames = np.arange(0, fn - seq_len + 1, opt.skip_rate)
+                        valid_frames = np.arange(0, fn - seq_len + 1, self.skip_rate)
                     else:
-                        valid_frames = np.arange(0, fn - seq_len + 1, opt.skip_rate)
+                        valid_frames = np.arange(0, fn - seq_len + 1, self.skip_rate)
 
                     # tmp_data_idx_1 = [(ds, sub, act)] * len(valid_frames)
                     self.keys.append((ds, sub, act))
