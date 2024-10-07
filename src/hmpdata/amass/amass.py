@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 class AMASSDataset(Dataset):
 
-    def __init__(self, input_n, output_n, skip_rate, actions=None, split=0):
+    def __init__(self, data_dir, input_n, output_n, skip_rate, actions=None, split=0):
         """
         :param path_to_data:
         :param actions:
@@ -20,7 +20,7 @@ class AMASSDataset(Dataset):
         :param split: 0 train, 1 testing, 2 validation
         :param sample_rate:
         """
-        self.path_to_data = "./datasets/amass/"
+        self.path_to_data = data_dir
         self.split = split
         self.in_n = input_n
         self.out_n = output_n
