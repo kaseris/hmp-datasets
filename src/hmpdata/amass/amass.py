@@ -123,4 +123,8 @@ class AMASSDataset(Dataset):
     def __getitem__(self, item):
         key, start_frame = self.data_idx[item]
         fs = np.arange(start_frame, start_frame + self.in_n + self.out_n)
-        return self.p3d[key][fs]  # , key
+        sequence = self.p3d[key][fs][:, self.joint_used, :]  # [input_n + output_n, 18, 3]
+        x = sequence[:self.in_n, :, :].float()
+        y = sequence[self.in_n:self.in_n + self.out_n, :, :].float()
+        next_pose = sequence[self.in_n: self.in_n + 1, :, :].float()
+        return x, y, next_pose
