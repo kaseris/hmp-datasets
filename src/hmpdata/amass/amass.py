@@ -61,7 +61,7 @@ class AMASSDataset(Dataset):
         # np.savez_compressed('smpl_skeleton.npz', p3d0=p3d0, parents=parents)
 
         # load mean skeleton
-        skel = np.load('./body_models/smpl_skeleton.npz')
+        skel = np.load(os.path.join(self.path_to_data, 'body_models/smpl_skeleton.npz'))
         p3d0 = torch.from_numpy(skel['p3d0']).float().cuda()
         parents = skel['parents']
         parent = {}
