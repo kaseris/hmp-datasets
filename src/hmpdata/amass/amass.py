@@ -102,7 +102,7 @@ class AMASSDataset(Dataset):
                     # remove global rotation
                     poses[:, 0] = 0
                     p3d0_tmp = p3d0.repeat([fn, 1, 1])
-                    p3d = ang2joint.ang2joint(p3d0_tmp, poses, parent)
+                    p3d = ang2joint(p3d0_tmp, poses, parent)
                     # self.p3d[(ds, sub, act)] = p3d.cpu().data.numpy()
                     self.p3d.append(p3d.cpu().data.numpy())
                     if split == 2:
