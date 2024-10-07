@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="hmpdata",
-    version="1.10.13",
+    version="1.10.14",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     # other package info

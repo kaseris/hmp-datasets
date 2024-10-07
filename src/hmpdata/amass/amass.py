@@ -128,7 +128,7 @@ class AMASSDataset(Dataset):
         y = sequence[self.in_n:self.in_n + self.out_n, :, :]
         next_pose = sequence[self.in_n: self.in_n + 1, :, :]
 
-        x = torch.from_numpy(x).float()
-        y = torch.from_numpy(y).float()
-        next_pose = torch.from_numpy(next_pose).float()
+        x = torch.from_numpy(x).float().reshape(self.in_n, -1)
+        y = torch.from_numpy(y).float().reshape(self.out_n, -1)
+        next_pose = torch.from_numpy(next_pose).float().reshape(1, -1)
         return x, y, next_pose
