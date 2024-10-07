@@ -124,7 +124,11 @@ class AMASSDataset(Dataset):
         key, start_frame = self.data_idx[item]
         fs = np.arange(start_frame, start_frame + self.in_n + self.out_n)
         sequence = self.p3d[key][fs][:, self.joint_used, :]  # [input_n + output_n, 18, 3]
-        x = sequence[:self.in_n, :, :].float()
-        y = sequence[self.in_n:self.in_n + self.out_n, :, :].float()
-        next_pose = sequence[self.in_n: self.in_n + 1, :, :].float()
+        x = sequence[:self.in_n, :, :]
+        y = sequence[self.in_n:self.in_n + self.out_n, :, :]
+        next_pose = sequence[self.in_n: self.in_n + 1, :, :]
+
+        x = torch.from_numpy(x).float()
+        y = torch.from_numpy(y).float()
+        next_pose = torch.from_numpy(next_pose).float()
         return x, y, next_pose
