@@ -1,4 +1,4 @@
-__version__ = "1.10.8"
+__version__ = "1.10.9"
 
 from hmpdata.human36m._h36m import skeleton_h36m as Human36MSkeleton
 from hmpdata.human36m.loader import prepare_next_batch_impl as prepare_next_batch
