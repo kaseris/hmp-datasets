@@ -1,183 +1,125 @@
 import os
 import glob
 import numpy as np
-from tqdm import tqdm
-from dataclasses import dataclass
 from scipy.spatial.transform import Rotation as R
 from hmpdata.amass.angle_to_joint import ang2joint
 
 import torch
-import torch.utils.data as data
+from torch.utils.data import Dataset
 
 
-@dataclass
-class AMASSConfig:
-    amass_input_length: int = 50
-    amass_target_length: int = 25
-    dim: int = 54
+class AMASSDataset(Dataset):
 
+    def __init__(self, opt, actions=None, split=0):
+        """
+        :param path_to_data:
+        :param actions:
+        :param input_n:
+        :param output_n:
+        :param dct_used:
+        :param split: 0 train, 1 testing, 2 validation
+        :param sample_rate:
+        """
+        self.path_to_data = "./datasets/amass/"
+        self.split = split
+        self.in_n = opt.input_n
+        self.out_n = opt.output_n
+        # self.sample_rate = opt.sample_rate
+        self.p3d = []
+        self.keys = []
+        self.data_idx = []
+        self.joint_used = np.arange(4, 22)
+        seq_len = self.in_n + self.out_n
 
-class AMASSDataset(data.Dataset):
-    def __init__(self, data_dir: str, config: AMASSConfig, split_name, data_aug=True):
-        super(AMASSDataset, self).__init__()
-        self._split_name = split_name
-        self._data_aug = data_aug
-        self._root_dir = data_dir
+        amass_splits = [
+            ['CMU', 'MPI_Limits', 'TotalCapture', 'Eyes_Japan_Dataset', 'KIT', 'EKUT', 'TCD_handMocap', 'ACCAD'],
+            ['HumanEva', 'MPI_HDM05', 'SFU', 'MPI_mosh'],
+            ['BioMotionLab_NTroje'],
+        ]
+        # amass_splits = [['BioMotionLab_NTroje'], ['HumanEva'], ['SSM_synced']]
+        # amass_splits = [['HumanEva'], ['HumanEva'], ['HumanEva']]
+        # amass_splits[0] = list(
+        #     set(amass_splits[0]).difference(set(amass_splits[1] + amass_splits[2])))
 
-        self._amass_anno_dir = data_dir
+        # from human_body_prior.body_model.body_model import BodyModel
+        # from smplx import lbs
+        # root_path = os.path.dirname(__file__)
+        # bm_path = root_path[:-6] + '/body_models/smplh/neutral/model.npz'
+        # bm = BodyModel(bm_path=bm_path, num_betas=16, batch_size=1, model_type='smplh')
+        # beta_mean = np.array([0.41771687, 0.25984767, 0.20500051, 0.13503872, 0.25965645, -2.10198147, -0.11915666,
+        #                       -0.5498772, 0.30885323, 1.4813145, -0.60987528, 1.42565269, 2.45862726, 0.23001716,
+        #                       -0.64180912, 0.30231911])
+        # beta_mean = torch.from_numpy(beta_mean).unsqueeze(0).float()
+        # # Add shape contribution
+        # v_shaped = bm.v_template + lbs.blend_shapes(beta_mean, bm.shapedirs)
+        # # Get the joints
+        # # NxJx3 array
+        # p3d0 = lbs.vertices2joints(bm.J_regressor, v_shaped)  # [1,52,3]
+        # p3d0 = (p3d0 - p3d0[:, 0:1, :]).float().cuda().cpu().data.numpy()
+        # parents = bm.kintree_table.data.numpy()[0, :]
+        # np.savez_compressed('smpl_skeleton.npz', p3d0=p3d0, parents=parents)
 
-        self._amass_file_names = self._get_amass_names()
-        self.amass_motion_input_length = config.amass_input_length
-        self.amass_motion_target_length = config.amass_target_length
+        # load mean skeleton
+        skel = np.load('./body_models/smpl_skeleton.npz')
+        p3d0 = torch.from_numpy(skel['p3d0']).float().cuda()
+        parents = skel['parents']
+        parent = {}
+        for i in range(len(parents)):
+            parent[i] = parents[i]
+        n = 0
+        for ds in amass_splits[split]:
+            if not os.path.isdir(self.path_to_data + ds):
+                print(ds)
+                continue
+            print('>>> loading {}'.format(ds))
+            for sub in os.listdir(self.path_to_data + ds):
+                if not os.path.isdir(self.path_to_data + ds + '/' + sub):
+                    continue
+                for act in os.listdir(self.path_to_data + ds + '/' + sub):
+                    if not act.endswith('.npz'):
+                        continue
+                    # if not ('walk' in act or 'jog' in act or 'run' in act or 'treadmill' in act):
+                    #     continue
+                    pose_all = np.load(self.path_to_data + ds + '/' + sub + '/' + act)
+                    try:
+                        poses = pose_all['poses']
+                    except:
+                        print('no poses at {}_{}_{}'.format(ds, sub, act))
+                        continue
+                    frame_rate = pose_all['mocap_framerate']
+                    # gender = pose_all['gender']
+                    # dmpls = pose_all['dmpls']
+                    # betas = pose_all['betas']
+                    # trans = pose_all['trans']
+                    fn = poses.shape[0]
+                    sample_rate = int(frame_rate // 25)
+                    fidxs = range(0, fn, sample_rate)
+                    fn = len(fidxs)
+                    poses = poses[fidxs]
+                    poses = torch.from_numpy(poses).float().cuda()
+                    poses = poses.reshape([fn, -1, 3])
+                    # remove global rotation
+                    poses[:, 0] = 0
+                    p3d0_tmp = p3d0.repeat([fn, 1, 1])
+                    p3d = ang2joint.ang2joint(p3d0_tmp, poses, parent)
+                    # self.p3d[(ds, sub, act)] = p3d.cpu().data.numpy()
+                    self.p3d.append(p3d.cpu().data.numpy())
+                    if split == 2:
+                        valid_frames = np.arange(0, fn - seq_len + 1, opt.skip_rate)
+                    else:
+                        valid_frames = np.arange(0, fn - seq_len + 1, opt.skip_rate)
 
-        self.motion_dim = config.dim
-        self._load_skeleton()
-        self._all_amass_motion_poses = self._load_all()
-        self._file_length = len(self._all_amass_motion_poses)
+                    # tmp_data_idx_1 = [(ds, sub, act)] * len(valid_frames)
+                    self.keys.append((ds, sub, act))
+                    tmp_data_idx_1 = [n] * len(valid_frames)
+                    tmp_data_idx_2 = list(valid_frames)
+                    self.data_idx.extend(zip(tmp_data_idx_1, tmp_data_idx_2))
+                    n += 1
 
     def __len__(self):
-        if self._file_length is not None:
-            return self._file_length
-        return len(self._all_amass_motion_poses)
+        return np.shape(self.data_idx)[0]
 
-    def _get_amass_names(self):
-
-        datasets = {
-            "train": [
-                "ACCAD",
-                "MPI_Limits",
-                "CMU",
-                "Eyes_Japan_Dataset",
-                "KIT",
-                "EKUT",
-                "TotalCapture",
-                "TCD_handMocap",
-            ],
-            "val": ["BioMotionLab_NTroje"],
-        }
-
-        # create list
-        seq_names = datasets[self._split_name]
-        # seq_names = []
-
-        # if self._split_name == "train":
-        #     seq_names += np.loadtxt(
-        #         os.path.join(
-        #             self._amass_anno_dir.replace("amass", ""), "amass_train.txt"
-        #         ),
-        #         dtype=str,
-        #     ).tolist()
-        # else:
-        #     seq_names += np.loadtxt(
-        #         os.path.join(
-        #             self._amass_anno_dir.replace("amass", ""), "amass_test.txt"
-        #         ),
-        #         dtype=str,
-        #     ).tolist()
-
-        file_list = []
-        for dataset in seq_names:
-            subjects = glob.glob(self._amass_anno_dir + "/" + dataset + "/*")
-            for subject in subjects:
-                if os.path.isdir(subject):
-                    files = glob.glob(subject + "/*poses.npz")
-                    file_list.extend(files)
-        return file_list
-
-    def _preprocess(self, amass_motion_feats):
-        if amass_motion_feats is None:
-            return None
-        amass_seq_len = amass_motion_feats.shape[0]
-
-        if (
-            self.amass_motion_input_length + self.amass_motion_target_length
-            < amass_seq_len
-        ):
-            start = np.random.randint(
-                amass_seq_len
-                - self.amass_motion_input_length
-                - self.amass_motion_target_length
-                + 1
-            )
-            end = start + self.amass_motion_input_length
-        else:
-            return None
-        amass_motion_input = torch.zeros(
-            (self.amass_motion_input_length, amass_motion_feats.shape[1])
-        )
-        amass_motion_input[: end - start] = amass_motion_feats[start:end]
-
-        amass_motion_target = torch.zeros(
-            (self.amass_motion_target_length, amass_motion_feats.shape[1])
-        )
-        amass_motion_target[: self.amass_motion_target_length] = amass_motion_feats[
-            end : end + self.amass_motion_target_length
-        ]
-
-        amass_motion = torch.cat([amass_motion_input, amass_motion_target], axis=0)
-
-        return amass_motion
-
-    def _load_skeleton(self):
-
-        skeleton_info = np.load(
-            os.path.join(self._root_dir, "body_models", "smpl_skeleton.npz")
-        )
-        self.p3d0 = torch.from_numpy(skeleton_info["p3d0"]).float()
-        parents = skeleton_info["parents"]
-        self.parent = {}
-        for i in range(len(parents)):
-            self.parent[i] = parents[i]
-
-    def _load_all(self):
-        all_amass_motion_poses = []
-        for amass_motion_name in tqdm(self._amass_file_names):
-            amass_info = np.load(amass_motion_name)
-            amass_motion_poses = amass_info["poses"]  # 156 joints(all joints of SMPL)
-            N = len(amass_motion_poses)
-            if N < self.amass_motion_target_length + self.amass_motion_input_length:
-                continue
-
-            frame_rate = amass_info["mocap_framerate"]
-            sample_rate = int(frame_rate // 25)
-            sampled_index = np.arange(0, N, sample_rate)
-            amass_motion_poses = amass_motion_poses[sampled_index]
-
-            T = amass_motion_poses.shape[0]
-            amass_motion_poses = R.from_rotvec(
-                amass_motion_poses.reshape(-1, 3)
-            ).as_rotvec()
-            amass_motion_poses = amass_motion_poses.reshape(T, 52, 3)
-            amass_motion_poses[:, 0] = 0
-
-            p3d0_tmp = self.p3d0.repeat([amass_motion_poses.shape[0], 1, 1])
-            amass_motion_poses = (
-                ang2joint(
-                    p3d0_tmp, torch.tensor(amass_motion_poses).float(), self.parent
-                )
-                .reshape(-1, 52, 3)[:, 4:22]
-                .reshape(T, -1)
-            )
-
-            all_amass_motion_poses.append(amass_motion_poses)
-        return all_amass_motion_poses
-
-    def __getitem__(self, index):
-        amass_motion_poses = self._all_amass_motion_poses[index]
-        amass_motion = self._preprocess(amass_motion_poses)
-        if amass_motion is None:
-            while amass_motion is None:
-                index = np.random.randint(self._file_length)
-                amass_motion_poses = self._all_amass_motion_poses[index]
-                amass_motion = self._preprocess(amass_motion_poses)
-
-        if self._data_aug:
-            if np.random.rand() > 0.5:
-                idx = [i for i in range(amass_motion.size(0) - 1, -1, -1)]
-                idx = torch.LongTensor(idx)
-                amass_motion = amass_motion[idx]
-
-        amass_motion_input = amass_motion[: self.amass_motion_input_length].float()
-        amass_motion_target = amass_motion[-self.amass_motion_target_length :].float()
-        amass_next_pose = amass_motion_target[:1].float()
-        return amass_motion_input, amass_motion_target, amass_next_pose
+    def __getitem__(self, item):
+        key, start_frame = self.data_idx[item]
+        fs = np.arange(start_frame, start_frame + self.in_n + self.out_n)
+        return self.p3d[key][fs]  # , key
