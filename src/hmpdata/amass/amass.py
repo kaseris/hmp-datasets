@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 class AMASSDataset(Dataset):
 
-    def __init__(self, data_dir, input_n, output_n, skip_rate, actions=None, split=0):
+    def __init__(self, data_dir, input_n, output_n, skip_rate, actions=None, split=0, data_aug: bool = False):
         """
         :param path_to_data:
         :param actions:
@@ -25,6 +25,7 @@ class AMASSDataset(Dataset):
         self.in_n = input_n
         self.out_n = output_n
         self.skip_rate = skip_rate
+        self.data_aug = data_aug
         # self.sample_rate = opt.sample_rate
         self.p3d = []
         self.keys = []
@@ -124,6 +125,10 @@ class AMASSDataset(Dataset):
         key, start_frame = self.data_idx[item]
         fs = np.arange(start_frame, start_frame + self.in_n + self.out_n)
         sequence = self.p3d[key][fs][:, self.joint_used, :]  # [input_n + output_n, 18, 3]
+        if self.data_aug:
+            if np.random.rand() > .5:
+                idx = [i for i in range(sequence.shape[0]-1, -1, -1)]
+                sequence = sequence[idx]
         x = sequence[:self.in_n, :, :]
         y = sequence[self.in_n:self.in_n + self.out_n, :, :]
         next_pose = sequence[self.in_n: self.in_n + 1, :, :]
